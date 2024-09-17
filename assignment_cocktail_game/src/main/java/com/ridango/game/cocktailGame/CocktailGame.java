@@ -2,7 +2,6 @@ package com.ridango.game.cocktailGame;
 
 import com.ridango.game.model.Cocktail;
 import com.ridango.game.service.CocktailGameService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,19 +12,15 @@ import java.util.*;
  */
 
 @Component
-@Slf4j
 public class CocktailGame {
 
-    private GameState gameState;
-    private int score = 0;
-    private int highScore = 0;
-    private int attemptsLeft = 5;
-    private final Set<Integer> seenCocktails = new HashSet<>();
+    private final GameState gameState;
     private final CocktailGameService cocktailService;
     private final Scanner scanner = new Scanner(System.in);
     @Autowired
-    CocktailGame(CocktailGameService cocktailService){
+    CocktailGame(CocktailGameService cocktailService, GameState gameState){
         this.cocktailService = cocktailService;
+        this.gameState = gameState;
     }
 
     /**
@@ -37,18 +32,18 @@ public class CocktailGame {
 
         while (true) {
             Cocktail cocktail = cocktailService.fetchRandomCocktail();
-            if (seenCocktails.contains(cocktail.getIdDrink())) {
+            if (gameState.getSeenCocktails().contains(cocktail.getIdDrink())) {
                 continue;
             }
-            seenCocktails.add(cocktail.getIdDrink());
+            gameState.getSeenCocktails().add(cocktail.getIdDrink());
 
             playRound(cocktail);
 
-            if (attemptsLeft == 0) {
-                System.out.println("Game over! Your score: " + score);
-                if (score > highScore) {
-                    highScore = score;
-                    System.out.println("New high score: " + highScore);
+            if (gameState.getAttemptsLeft() == 0) {
+                System.out.println("Game over! Your score: " + gameState.getScore());
+                if (gameState.getScore() > gameState.getHighScore()) {
+                    gameState.setHighScore(gameState.getScore());
+                    System.out.println("New high score: " + gameState.getHighScore());
                 }
 //                resetGame();
                 break;
@@ -65,33 +60,44 @@ public class CocktailGame {
      * @param cocktail The cocktail object for the current round.
      */
     private void playRound(Cocktail cocktail) {
-        String hiddenName = hideCocktailName(cocktail.getName());
+        String cocktailName = cocktail.getName();
+        String hiddenName = hideCocktailName(cocktailName);
+
+        int totalLetters = (int) cocktailName.chars().filter(Character::isLetterOrDigit).count();
+
+        List<Integer> unrevealedIndices = new ArrayList<>();
+        for (int i = 0; i < hiddenName.length(); i++) {
+            if (hiddenName.charAt(i) == '_') {
+                unrevealedIndices.add(i);
+            }
+        }
+        Collections.shuffle(unrevealedIndices);
+
         System.out.println("Cocktail instructions: " + cocktail.getInstructions());
         System.out.println();
         System.out.println("Guess the cocktail: " + hiddenName);
 
         List<String> details = prepareCocktailDetails(cocktail);
 
-        while (attemptsLeft > 0) {
+        while (gameState.getAttemptsLeft() > 0) {
             System.out.print("Your guess: ");
-            System.out.println();
             String guess = scanner.nextLine();
-            if (guess.equalsIgnoreCase(cocktail.getName())) {
-                System.out.println("Correct! The cocktail is: " + cocktail.getName());
-                score += attemptsLeft;
-                System.out.println("The score is " + score);
+            if (guess.equalsIgnoreCase(cocktailName)) {
+                System.out.println("Correct! The cocktail is: " + cocktailName);
+                gameState.incrementScore(gameState.getAttemptsLeft());
+                System.out.println("The score is " + gameState.getScore());
                 System.out.println();
-                attemptsLeft = 5;
+                gameState.setAttemptsLeft(5);
                 break;
             } else {
-                attemptsLeft--;
-                if (attemptsLeft > 0) {
-                    hiddenName = revealLetters(hiddenName, cocktail.getName());
+                gameState.decrementAttempts();
+                if (gameState.getAttemptsLeft() > 0) {
+                    hiddenName = revealLetters(hiddenName, cocktailName, unrevealedIndices, totalLetters);
                     System.out.println("Wrong! Try again. Cocktail: " + hiddenName);
-                    System.out.println("Attempts left: " + attemptsLeft);
+                    System.out.println("Attempts left: " + gameState.getAttemptsLeft());
                     revealRandomCocktailDetail(details);
                 } else {
-                    System.out.println("Out of attempts! The cocktail was: " + cocktail.getName());
+                    System.out.println("Out of attempts! The cocktail was: " + cocktailName);
                     break;
                 }
             }
@@ -105,7 +111,7 @@ public class CocktailGame {
      * @return The cocktail name with letters replaced by underscores.
      */
     private String hideCocktailName(String cocktailName) {
-        return cocktailName.replaceAll("[a-zA-Z]", "_");
+        return cocktailName.replaceAll("[a-zA-Z0-9]", "_");
     }
 
     /**
@@ -115,23 +121,15 @@ public class CocktailGame {
      * @param originalName The original cocktail name.
      * @return The updated hidden name with some letters revealed.
      */
-    private String revealLetters(String hiddenName, String originalName) {
+    private String revealLetters(String hiddenName, String originalName, List<Integer> unrevealedIndices, int totalLetters) {
         char[] hiddenArray = hiddenName.toCharArray();
         char[] originalArray = originalName.toCharArray();
 
-        List<Integer> indices = new ArrayList<>();
+        int lettersToRevealNow = getLettersToRevealNow(totalLetters);
 
-        for (int i = 0; i < hiddenArray.length; i++) {
-            if (hiddenArray[i] == '_') {
-                indices.add(i);
-            }
-        }
-        Collections.shuffle(indices);
-
-        int lettersToRevealNow = getLettersToRevealNow(originalName);
-
-        for (int i = 0; i < Math.min(lettersToRevealNow, indices.size()); i++) {
-            hiddenArray[indices.get(i)] = originalArray[indices.get(i)];
+        for (int i = 0; i < Math.min(lettersToRevealNow, unrevealedIndices.size()); i++) {
+            int revealIndex = unrevealedIndices.remove(0);
+            hiddenArray[revealIndex] = originalArray[revealIndex];
         }
 
         return new String(hiddenArray);
@@ -140,18 +138,14 @@ public class CocktailGame {
     /**
      * Determines the number of letters to reveal based on the length of the cocktail name and attempts left.
      *
-     * @param originalName The original cocktail name.
      * @return The number of letters to reveal.
      */
-    private int getLettersToRevealNow(String originalName) {
-        int totalLetters = (int) originalName.chars()
-                .filter(Character::isLetterOrDigit)
-                .count();
+    private int getLettersToRevealNow(int totalLetters) {
 
-        if (attemptsLeft > totalLetters){
+        if (gameState.getAttemptsLeft() > totalLetters){
             return 0;
         }
-        else if (attemptsLeft == totalLetters){
+        else if (gameState.getAttemptsLeft() == totalLetters){
             return 1;
         } else {
             return Math.max(1, totalLetters / 5);
