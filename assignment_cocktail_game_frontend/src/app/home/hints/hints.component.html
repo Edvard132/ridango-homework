@@ -1,0 +1,15 @@
+<div class="column gap-05 align-center">
+  <p *ngIf="hasHint(0)">
+    <span class="text-gray">Hint 1: </span>
+    Cocktail category is {{ getHint(0) }}
+  </p>
+  <p *ngIf="hasHint(1)">
+    <span class="text-gray">Hint 2: </span>
+    Cocktail glass is {{ getHint(1) }}
+  </p>
+  <p *ngIf="hasHint(2)">
+    <span class="text-gray">Hint 3: </span>
+    Cocktail ingredients are {{ getHint(2) }}
+  </p>
+  <img *ngIf="hasHint(3)" [src]="getHint(3)" alt="Cocktail Hint" />
+</div>

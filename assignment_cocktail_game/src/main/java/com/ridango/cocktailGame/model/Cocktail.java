@@ -1,4 +1,4 @@
-package com.ridango.game.model;
+package com.ridango.cocktailGame.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,6 +7,9 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Holds the cocktail object.
+ */
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,6 +30,9 @@ public class Cocktail {
 
     @JsonProperty("strInstructions")
     private String instructions;
+
+    @JsonProperty("strDrinkThumb")
+    private String imageUrl;
 
     @JsonProperty("strIngredient1")
     private String ingredient1;

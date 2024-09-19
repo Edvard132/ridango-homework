@@ -1,0 +1,36 @@
+<div class="max-width-wrapper column align-center">
+  <div class="column gap-2 align-center mt-50">
+    <div class="row gap-05">
+      <span class="text-gray">Instructions: </span>
+      <h3>{{ cocktail.instructions }}</h3>
+    </div>
+    <h2>{{ cocktail.hiddenName }}</h2>
+    <input
+      type="text"
+      pInputText
+      variant="filled"
+      placeholder="Your Guess..."
+      [(ngModel)]="guessRequest.guess"
+      [disabled]="cocktail.attemptsLeft === 0"
+      (keydown.enter)="
+        cocktail.attemptsLeft! > 0 ? makeGuess() : fetchRandomCocktail()
+      "
+      autofocus
+    />
+    <p-button
+      label="{{ cocktail.attemptsLeft! > 0 ? 'Submit' : 'New Game' }}"
+      severity="contrast"
+      (click)="cocktail.attemptsLeft! > 0 ? makeGuess() : fetchRandomCocktail()"
+    ></p-button>
+    <p>
+      <span class="text-gray">Attempts left:</span>
+      {{ cocktail.attemptsLeft }}
+    </p>
+    <app-result
+      [result]="cocktail.result"
+      [score]="cocktail.score"
+      [attemptsLeft]="cocktail.attemptsLeft"
+    />
+    <app-cocktail-hints [hints]="cocktail.hints ?? []" />
+  </div>
+</div>

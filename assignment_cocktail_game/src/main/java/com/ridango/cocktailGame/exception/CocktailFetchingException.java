@@ -1,17 +1,14 @@
-package com.ridango.game.exception;
+package com.ridango.cocktailGame.exception;
 
-/**
- * Thrown when no cocktail is fetched.
- */
-public class NoCocktailFoundException extends RuntimeException {
+public class CocktailFetchingException extends RuntimeException {
     private final String message;
     private final Throwable cause;
 
-    public NoCocktailFoundException(String message) {
+    public CocktailFetchingException(String message) {
         this(message, null);
     }
 
-    public NoCocktailFoundException(String message, Throwable cause) {
+    public CocktailFetchingException(String message, Throwable cause) {
         this.message = message;
         this.cause = cause;
     }
