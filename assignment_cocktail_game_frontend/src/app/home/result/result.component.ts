@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './result.component.scss',
 })
 export class ResultComponent {
-  @Input() result: string | undefined;
-  @Input() score: number | undefined;
-  @Input() attemptsLeft: number | undefined;
+  @Input() result: string = "";
+  @Input() score: number = 0;
+  @Input() attemptsLeft: number = 5;
 }

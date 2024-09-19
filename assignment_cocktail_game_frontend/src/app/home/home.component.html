@@ -13,14 +13,14 @@
       [(ngModel)]="guessRequest.guess"
       [disabled]="cocktail.attemptsLeft === 0"
       (keydown.enter)="
-        cocktail.attemptsLeft! > 0 ? makeGuess() : fetchRandomCocktail()
+        cocktail.attemptsLeft > 0 ? makeGuess() : fetchRandomCocktail()
       "
       autofocus
     />
     <p-button
-      label="{{ cocktail.attemptsLeft! > 0 ? 'Submit' : 'New Game' }}"
+      label="{{ cocktail.attemptsLeft > 0 ? 'Submit' : 'New Game' }}"
       severity="contrast"
-      (click)="cocktail.attemptsLeft! > 0 ? makeGuess() : fetchRandomCocktail()"
+      (click)="cocktail.attemptsLeft > 0 ? makeGuess() : fetchRandomCocktail()"
     ></p-button>
     <p>
       <span class="text-gray">Attempts left:</span>
@@ -31,6 +31,6 @@
       [score]="cocktail.score"
       [attemptsLeft]="cocktail.attemptsLeft"
     />
-    <app-cocktail-hints [hints]="cocktail.hints ?? []" />
+    <app-cocktail-hints [hints]="cocktail.hints" />
   </div>
 </div>

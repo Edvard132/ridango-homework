@@ -25,7 +25,14 @@ import { ResultComponent } from './result/result.component';
 export class HomeComponent {
   constructor(private cocktailService: CocktailService) {}
 
-  cocktail: Cocktail = {};
+  cocktail: Cocktail = {
+    hiddenName: '',
+    instructions: '',
+    attemptsLeft: 5,
+    hints: [],
+    score: 0,
+    result: '',
+  };
 
   guessRequest: GuessRequest = { guess: '' };
 
@@ -38,7 +45,6 @@ export class HomeComponent {
       .getRandomCocktail('http://localhost:8080/api/v1/cocktail/random')
       .subscribe({
         next: (cocktail: Cocktail) => {
-          console.log(cocktail);
           this.cocktail = cocktail;
         },
         error: (error) => {
@@ -55,7 +61,6 @@ export class HomeComponent {
       )
       .subscribe({
         next: (cocktail: Cocktail) => {
-          console.log(cocktail);
           this.guessRequest.guess = '';
           this.cocktail = cocktail;
         },
